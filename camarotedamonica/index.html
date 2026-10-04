@@ -447,6 +447,13 @@
     text-align: left;
   }
   .rsvp-aviso:empty { display: none; }
+  .rsvp-aviso a {
+    color: var(--creme);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: var(--dourado);
+    text-underline-offset: 3px;
+  }
 
   /* Lista de convites encontrados */
   .rsvp-lista { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
@@ -1394,7 +1401,11 @@
     // Mesma regra do script: mínimo de palavras na busca por nome.
     var PALAVRAS_MINIMAS = 2;
 
-    // Textos em Inter. Trechos entre [colchetes] dependem da cerimonialista.
+    // WhatsApp da assessoria (aviso de nome não encontrado), com mensagem pronta.
+    var WHATSAPP_ASSESSORIA = 'https://wa.me/5521974202046?text=' +
+      encodeURIComponent('Olá! Não encontrei meu nome na lista de convidados do Camarote da Mônica.');
+
+    // Textos em Inter.
     var TEXTOS = {
       buscaRotulo: 'Nome e sobrenome',
       buscarOutro: 'Buscar outro nome',
@@ -1410,12 +1421,13 @@
 
       // Avisos
       nome_incompleto: 'Digite seu nome e sobrenome.',
-      nao_encontrado: 'Não encontramos esse nome na lista. Confira a grafia ou tente com outro sobrenome. Se ainda assim não encontrar, fale com [contato a definir].',
+      nao_encontrado: 'Não encontramos esse nome na lista. Confira a grafia ou tente com outro sobrenome. Se ainda assim não encontrar, ',
+      nao_encontrado_link: 'fale com a assessoria pelo WhatsApp',
       muitos_resultados: 'Encontramos muitos convites com esse nome. Digite seu nome completo.',
       escolha_resposta: 'Escolha uma das opções acima.',
       responder_todos: 'Responda para todas as pessoas do convite.',
       ninguem_marcado: 'Responda para todas as pessoas do convite.',
-      prazo_encerrado: 'O prazo para confirmar presença foi encerrado. Para falar sobre sua presença, entre em contato com [contato a definir].',
+      prazo_encerrado: 'O prazo para confirmar presença foi encerrado.',
       lista_alterada: 'A lista de convidados foi atualizada. Busque seu nome novamente, por favor.',
       falha: 'Não foi possível concluir agora. Verifique sua conexão e tente de novo em instantes.'
     };
@@ -1491,6 +1503,19 @@
       dlg.querySelector('[data-passo="' + passo + '"] [data-aviso]').textContent = texto || '';
     }
 
+    // Aviso de nome não encontrado, com link para o WhatsApp da assessoria
+    function avisoNaoEncontrado() {
+      var el = dlg.querySelector('[data-passo="busca"] [data-aviso]');
+      el.textContent = TEXTOS.nao_encontrado;
+      var a = document.createElement('a');
+      a.href = WHATSAPP_ASSESSORIA;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.textContent = TEXTOS.nao_encontrado_link;
+      el.appendChild(a);
+      el.appendChild(document.createTextNode('.'));
+    }
+
     function reiniciar() {
       conviteAtual = null;
       respostas = [];
@@ -1553,7 +1578,7 @@
       pedir(URL_CONFIRMACAO + '?acao=buscar&tipo=nome&termo=' + encodeURIComponent(termo))
         .then(function (r) {
           if (!r.ok) { aviso('busca', TEXTOS[r.erro] || TEXTOS.falha); return; }
-          if (!r.convites.length) { aviso('busca', TEXTOS.nao_encontrado); return; }
+          if (!r.convites.length) { avisoNaoEncontrado(); return; }
           if (r.convites.length === 1) { abrirConvite(r.convites[0]); return; }
           montarLista(r.convites);
         })
