@@ -2020,16 +2020,16 @@
 
     // Primeiro toque em qualquer lugar (menos no próprio botão) liga a música.
     function primeiroToque(e) {
-      document.removeEventListener('pointerdown', primeiroToque, true);
+      document.removeEventListener('click', primeiroToque, true);
       if (e.target.closest && e.target.closest('[data-som]')) return;
       if (!desligadaPeloConvidado) tocar();
     }
-    document.addEventListener('pointerdown', primeiroToque, true);
+    document.addEventListener('click', primeiroToque, true);
 
     Array.prototype.forEach.call(botoes, function (b) {
       b.addEventListener('click', function (e) {
         e.stopPropagation();
-        document.removeEventListener('pointerdown', primeiroToque, true);
+        document.removeEventListener('click', primeiroToque, true);
         if (audio.paused) { desligadaPeloConvidado = false; tocar(); }
         else { desligadaPeloConvidado = true; audio.pause(); }
       });
