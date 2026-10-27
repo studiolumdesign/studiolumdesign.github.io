@@ -1,0 +1,16 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Studio LUM//Camarote da Monica//PT
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:camarote-da-monica-abada-20261104@studiolum.com.br
+DTSTAMP:20261027T000000Z
+DTSTART:20261104T210000Z
+DTEND:20261105T000000Z
+SUMMARY:Camarote da Mônica: retirada do abadá
+LOCATION:Ateliê de Eventos\, R. Estado de Israel\, 126 - Várzea\, Teresópolis - RJ\, 25963-030
+DESCRIPTION:Retirada do abadá para o Camarote da Mônica.\nhttps://studiolum.com.br/camarotedamonica/
+URL:https://studiolum.com.br/camarotedamonica/
+END:VEVENT
+END:VCALENDAR
