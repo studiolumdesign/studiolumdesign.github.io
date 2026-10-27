@@ -582,11 +582,12 @@
   .som[aria-pressed="true"] .som-ligado { display: block; }
   .som[aria-pressed="true"] .som-desligado { display: none; }
   /* Encaixado no canto superior direito da moldura */
+  /* Flutuante: fixo na tela, no ponto do canto da moldura; acompanha a rolagem */
   .som-canto {
-    position: absolute;
-    z-index: 4;
-    top: calc(62.22 * var(--u) + 8.5 * var(--u) - 20px);
-    right: calc(50.71 * var(--u) + 8.5 * var(--u) - 20px);
+    position: fixed;
+    z-index: 20;
+    top: calc(max(16px, env(safe-area-inset-top)) + 70.72 * var(--u) - 20px);
+    right: calc((100% - var(--cw)) / 2 + 59.21 * var(--u) - 20px);
   }
   .js .som-canto { opacity: 0; }
   .play .som-canto { animation: surge-moldura 1.4s ease-out 3.0s both; }
@@ -594,15 +595,56 @@
   @media (prefers-reduced-motion: reduce) { .js .som-canto { opacity: 1; } .play .som-canto { animation: none; } }
   /* Na confirmação de presença: mesmo lugar da página principal, sobre o canto da moldura */
   .rsvp .som-rsvp {
-    position: absolute;
-    z-index: 4;
-    top: calc(8.5 * var(--u) - 20px);
-    right: calc(8.5 * var(--u) - 20px);
+    position: fixed;
+    z-index: 20;
+    top: calc(max(16px, env(safe-area-inset-top)) + 70.72 * var(--u) - 20px);
+    right: calc((100% - var(--cw)) / 2 + 59.21 * var(--u) - 20px);
   }
+
+  /* ---------- Tela de entrada: "Clique para abrir" ----------
+     Mostra a máscara sobre o borgonha. O toque libera o som (exigência
+     dos navegadores), o texto some e a abertura animada começa. */
+  .entrada {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  html.aguardando .entrada, html.saindo .entrada { display: block; }
+  html.saindo .entrada { pointer-events: none; }
+  .entrada-texto {
+    position: absolute;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: var(--creme);
+    font: 300 12px/1.4 'Inter', system-ui, sans-serif;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+  }
+  html.saindo .entrada-texto { animation: entrada-some .6s ease-out forwards; }
+  @keyframes entrada-some { to { opacity: 0; } }
+  /* Enquanto espera o toque: só a máscara, em cor cheia */
+  html.aguardando #mascara { opacity: 1 !important; animation: none !important; }
+  html.aguardando .anim, html.aguardando .acoes, html.aguardando #moldura,
+  html.aguardando .som-canto, html.aguardando .entrega-toque { opacity: 0 !important; visibility: hidden; animation: none !important; }
+  /* Depois do toque, a máscara já está visível: segue direto para o esmaecer */
+  html.entrou #mascara { opacity: 1; transform: none; }
+  html.entrou.play #mascara { animation: mascara-dissolve 1.8s ease-in-out 1.8s forwards; }
+  @media (prefers-reduced-motion: reduce) { html.entrou.play #mascara { animation: none; opacity: .4; } }
 </style>
-<script>document.documentElement.classList.add('js');</script>
+<script>document.documentElement.classList.add('js', 'aguardando');</script>
 </head>
 <body>
+<button type="button" class="entrada" id="entrada" aria-label="Abrir o convite"><span class="entrada-texto" id="entrada-texto">Clique para abrir</span></button>
 <main>
 <div class="cartao">
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1249.26 1764" id="convite" role="img" aria-labelledby="convite-titulo">
@@ -1484,7 +1526,30 @@
     }
 
     // Começa assim que a página estiver pronta.
-    requestAnimationFrame(function () { requestAnimationFrame(iniciar); });
+    // Começa no toque da tela de entrada (o mesmo toque libera a música).
+    var entrada = document.getElementById('entrada');
+    var textoEntrada = document.getElementById('entrada-texto');
+    function posicionarTexto() {
+      // Logo abaixo da máscara, onde depois aparecem os textos do convite
+      var c = document.querySelector('.cartao');
+      if (!c || !textoEntrada) return;
+      var r = c.getBoundingClientRect();
+      textoEntrada.style.top = (r.top + r.width * 1090 / 1249.26) + 'px';
+    }
+    posicionarTexto();
+    window.addEventListener('resize', posicionarTexto);
+    function entrar() {
+      if (!root.classList.contains('aguardando')) return;
+      root.classList.add('saindo');
+      root.classList.remove('aguardando');
+      root.classList.add('entrou');
+      iniciar();
+      // a tela de entrada some depois do fade do texto
+      setTimeout(function () { entrada.remove(); root.classList.remove('saindo'); }, 650);
+      setTimeout(function () { root.classList.add('abertura-pronta'); }, 6600);
+    }
+    if (entrada) entrada.addEventListener('click', entrar);
+    else { root.classList.remove('aguardando'); requestAnimationFrame(function () { requestAnimationFrame(iniciar); }); }
   })();
 </script>
 <script>
@@ -1925,10 +1990,6 @@
       if (sim) setTimeout(confete, 250);
     }
   })();
-</script>
-<script>
-  /* Abertura animada concluída: libera os toques no bloco da retirada e nos botões */
-  setTimeout(function () { document.documentElement.classList.add('abertura-pronta'); }, 6600);
 </script>
 <script>
   /* =========================================================
