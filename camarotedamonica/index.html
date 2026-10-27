@@ -592,9 +592,13 @@
   .play .som-canto { animation: surge-moldura 1.4s ease-out 3.0s both; }
   html.fim .som-canto { animation: none; opacity: 1; }
   @media (prefers-reduced-motion: reduce) { .js .som-canto { opacity: 1; } .play .som-canto { animation: none; } }
-  /* Na confirmação de presença, ao lado do X */
-  .rsvp-topo .som-rsvp { margin-left: auto; width: 36px; height: 36px; }
-  .rsvp-topo .som-rsvp svg { width: 17px; height: 17px; }
+  /* Na confirmação de presença: mesmo lugar da página principal, sobre o canto da moldura */
+  .rsvp .som-rsvp {
+    position: absolute;
+    z-index: 4;
+    top: calc(8.5 * var(--u) - 20px);
+    right: calc(8.5 * var(--u) - 20px);
+  }
 </style>
 <script>document.documentElement.classList.add('js');</script>
 </head>
